@@ -1,9 +1,6 @@
-# SubQuery - Starter Package
+# SubQuery Paras NFT
 
-The Starter Package is an example that you can use as a starting point for developing your SubQuery project.
-A SubQuery Project defines which data The SubQuery will index from the Substrate blockchain, and how it will store it.
-
-This is a specific starter project for NEAR. It indexes all transactions of the token.sweat contract token from sweat_welcome.near (whick rewards users for physically moving around). It also indexes all storage_deposit calls for the same contract.
+This project indexes NFTs from https://paras.id/. It specifically indexes actions where the receiver is marketplace.paras.near on the buy method. In otherwords, NFTs that have been bought in the Paras marketplace. 
 
 ## Preparation
 
@@ -27,37 +24,33 @@ Run help to see available commands and usage provide by CLI
 subql help
 ```
 
-## Initialize the starter package
+## Clone project
 
-Inside the directory in which you want to create the SubQuery project, simply replace `project-name` with your project name and run the command:
 
 ```
-subql init --starter project-name
+git clone https://github.com/seandotau/subql-paras-nft.git
 ```
 
-Then you should see a folder with your project name has been created inside the directory, you can use this as the start point of your project. And the files should be identical as in the [Directory Structure](https://doc.subquery.network/directory_structure.html).
-
-Last, under the project directory, run following command to install all the dependency.
+In the project directory, install all the dependencies.
 
 ```
 yarn install
 ```
 
-## Configure your project
+## Customise project
 
-In the starter package, we have provided a simple example of project configuration. You will be mainly working on the following files:
+To customise this project, 3 files will be required to be modified.
 
-- The Manifest in `project.yaml`
 - The GraphQL Schema in `schema.graphql`
+- The Manifest in `project.yaml`
 - The Mapping functions in `src/mappings/` directory
 
 For more information on how to write the SubQuery,
-check out our doc section on [Define the SubQuery](https://doc.subquery.network/define_a_subquery.html)
+check out our doc section on [Building a SubQuery](https://academy.subquery.network/build/introduction.html)
 
-#### Code generation
+## Code generation
 
-In order to index your SubQuery project, it is mandatory to build your project first.
-Run this command under the project directory.
+In order to index your SubQuery project, first run codegen. This auto-generates the associated typescripts from your schema file.
 
 ```
 yarn codegen
@@ -65,8 +58,7 @@ yarn codegen
 
 ## Build the project
 
-In order to deploy your SubQuery project to our hosted service, it is mandatory to pack your configuration before upload.
-Run pack command from root directory of your project will automatically generate a `your-project-name.tgz` file.
+Next, build the project.
 
 ```
 yarn build
@@ -74,34 +66,77 @@ yarn build
 
 ## Indexing and Query
 
-#### Run required systems in docker
+#### Docker
 
-Under the project directory run following command:
+In the project directory, start docker.
 
 ```
-docker-compose pull && docker-compose up
+yarn start:docker
 ```
 
 #### Query the project
 
-Open your browser and head to `http://localhost:3000`.
-
-Finally, you should see a GraphQL playground is showing in the explorer and the schemas that ready to query.
-
-For the `subql-starter` project, you can try to query with the following code to get a taste of how it works.
+Open your browser and head to `http://localhost:3000` and run the following query:
 
 ```graphql
 query {
-  nearTxEntities(first: 50) {
+  nearTxEntities(filter:{
+    block:{equalTo:85291528}
+  }) {
     totalCount
     nodes {
       id
+      block
+      receiver
     }
   }
-  nearActionEntities(first: 50) {
+  nearActionEntities(filter:{
+    block:{equalTo:85291528}
+  }) {
     totalCount
     nodes {
       id
+      block
+      receiver
+      sender
+      tokenId
+      nftContractId
+      ftTokenId
+      price
+    }
+  }
+}
+```
+
+Expected results
+
+```graphql
+{
+  "data": {
+    "nearTxEntities": {
+      "totalCount": 1,
+      "nodes": [
+        {
+          "id": "5KPsgj562k2oEA9vRCrSefYeC7TVghRg4zzdteWbzuLk-9N4vvrwppR1Rz2AoBZUAzEhZ2SfpqXGQXBCc1Lpo9sUN",
+          "block": 85291528,
+          "receiver": "marketplace.paras.near"
+        }
+      ]
+    },
+    "nearActionEntities": {
+      "totalCount": 1,
+      "nodes": [
+        {
+          "id": "9N4vvrwppR1Rz2AoBZUAzEhZ2SfpqXGQXBCc1Lpo9sUN-0",
+          "block": 85291528,
+          "receiver": "marketplace.paras.near",
+          "sender": "donkey2020.near",
+          "tokenId": "193",
+          "nftContractId": "nft.classykangaroosv2.near",
+          "ftTokenId": "near",
+          "price": "45000000000000000000000000"
+        }
+      ]
     }
   }
 }
