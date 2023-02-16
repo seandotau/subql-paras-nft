@@ -1,0 +1,24 @@
+type NearBlockEntity @entity {
+  id: ID!
+  author: String!
+  hash: String!
+  timestamp: BigInt!
+}
+
+type NearTxEntity @entity {
+  id: ID!
+  block: Int
+  signer: String
+  receiver: String!
+}
+
+type NearActionEntity @entity {
+  id: ID!
+  block: Int
+  sender: String!
+  receiver: String
+  token_id: BigInt
+  nft_contract_id: String
+  ft_token_id: String
+  price: BigInt
+}
